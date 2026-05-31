@@ -14,7 +14,6 @@ from engineering_team.crew import EngineeringTeam
 
 warnings.filterwarnings("ignore", category=SyntaxWarning, module="pysbd")
 
-# Create output directory if it doesn't exist
 os.makedirs('output', exist_ok=True)
 
 requirements = """
@@ -48,7 +47,7 @@ def clean_output_files(directory="output"):
                         content = f.read().strip()
                     
                     modified = False
-                    # Remove python markdown wrapper lines
+                    
                     if content.startswith("```python"):
                         content = content[len("```python"):].strip()
                         modified = True
@@ -56,7 +55,7 @@ def clean_output_files(directory="output"):
                         content = content[3:].strip()
                         modified = True
                     
-                    # Remove trailing backticks
+                    
                     if content.endswith("```"):
                         content = content[:-3].strip()
                         modified = True
@@ -78,26 +77,26 @@ def run():
         'class_name': class_name
     }
 
-    # 1. Run the initial multi-agent pipeline
-    print("🚀 Starting Multi-Agent Development Pipeline...")
+
+    print("Starting Multi-Agent Development Pipeline...")
     team = EngineeringTeam()
     result = team.crew().kickoff(inputs=inputs)
-    print("✅ Initial pipeline execution completed.")
+    print("Initial pipeline execution completed.")
     
-    # Clean the generated files immediately after they are written
+    
     clean_output_files()
 
-    # 2. Enter the Backend Self-Healing Loop
+
     max_retries = 3
     test_file_path = os.path.join('output', f"test_{module_name}")
     code_file_path = os.path.join('output', module_name)
     frontend_file_path = os.path.join('output', 'app.py')
 
     for attempt in range(1, max_retries + 1):
-        print(f"\n🔍 Running Unit Tests (Attempt {attempt}/{max_retries})...")
+        print(f"\nRunning Unit Tests (Attempt {attempt}/{max_retries})...")
         
         if not os.path.exists(test_file_path):
-            print(f"❌ Test file not found at {test_file_path}. Cannot verify code.")
+            print(f"Test file not found at {test_file_path}. Cannot verify code.")
             break
 
         env = os.environ.copy()
@@ -111,18 +110,18 @@ def run():
         )
 
         if run_result.returncode == 0:
-            print("🎉 Success! All unit tests passed.")
+            print("All unit tests passed.")
             break
         else:
-            print("❌ Tests failed. Capturing error traceback...")
+            print("Tests failed. Capturing error traceback.")
             error_trace = run_result.stderr or run_result.stdout
             print(error_trace)
 
             if attempt == max_retries:
-                print("⚠️ Max retries reached. Exiting loop with test failures.")
+                print("Max retries reached. Exiting loop with test failures.")
                 break
 
-            print(f"🔄 Triggering Backend Self-Healing: Sending design spec and error trace to Backend Engineer...")
+            print(f"Triggering Backend Self-Healing: Sending design spec and error trace to Backend Engineer.")
             
             design_file_path = os.path.join('output', f"{module_name}_design.md")
             with open(design_file_path, 'r', encoding='utf-8') as f:
@@ -148,22 +147,21 @@ def run():
                 verbose=True
             )
             refinement_crew.kickoff(inputs=refinement_inputs)
-            print("🩹 Backend Engineer updated the code. Cleaning and re-running tests...")
+            print("Backend Engineer updated the code. Cleaning and re-running tests.")
             clean_output_files()
 
-    # 3. Enter the Frontend Smoke Test & Self-Healing Loop
+    
     for attempt in range(1, max_retries + 1):
-        print(f"\n🖥️ Running Frontend Smoke Test (Attempt {attempt}/{max_retries})...")
+        print(f"\nRunning Frontend Test (Attempt {attempt}/{max_retries}).")
         
         if not os.path.exists(frontend_file_path):
-            print(f"❌ Frontend file not found at {frontend_file_path}. Cannot verify UI.")
+            print(f"Frontend file not found at {frontend_file_path}. Cannot verify UI.")
             break
 
         env = os.environ.copy()
         env["PYTHONPATH"] = os.path.abspath("output") + os.pathsep + env.get("PYTHONPATH", "")
 
-        # Launch the Gradio app in the background. If it has a NameError/ImportError, it crashes immediately.
-        # If it's valid, it will block (keep running). We wait 2 seconds and stop it.
+       
         try:
             proc = subprocess.Popen(
                 [sys.executable, frontend_file_path],
@@ -172,23 +170,22 @@ def run():
                 text=True,
                 env=env
             )
-            # Wait for 2.5 seconds to see if it crashes
+        
             stdout, stderr = proc.communicate(timeout=2.5)
-            # If communicate completes, it means the process exited (crashed!)
-            print("❌ Frontend crashed on startup!")
+
+            print("Frontend crashed on startup!")
             error_trace = stderr or stdout
             print(error_trace)
         except subprocess.TimeoutExpired:
-            # If timeout expires, it means the server booted successfully and is blocking!
-            print("🎉 Success! Frontend booted successfully without crashing.")
-            proc.kill() # Clean up the server process
+            print("Frontend booted successfully without crashing.")
+            proc.kill() 
             break
 
         if attempt == max_retries:
-            print("⚠️ Max retries reached. Exiting loop with frontend failures.")
+            print("Max retries reached. Exiting loop with frontend failures.")
             break
 
-        print(f"🔄 Triggering Frontend Self-Healing: Sending error trace to Frontend Engineer...")
+        print(f"Triggering Frontend Self-Healing: Sending error trace to Frontend Engineer.")
         with open(code_file_path, 'r', encoding='utf-8') as f:
             backend_code = f.read()
         with open(frontend_file_path, 'r', encoding='utf-8') as f:
@@ -209,7 +206,7 @@ def run():
             verbose=True
         )
         refinement_crew.kickoff(inputs=frontend_refinement_inputs)
-        print("🩹 Frontend Engineer updated the UI. Cleaning and re-running smoke test...")
+        print("Frontend Engineer updated the UI. Cleaning and re-running test.")
         clean_output_files()
         
 if __name__ == "__main__":

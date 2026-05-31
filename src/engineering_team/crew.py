@@ -26,7 +26,7 @@ class EngineeringTeam():
                             content = f.read().strip()
                         
                         modified = False
-                        # Strip leading markdown wrappers
+                        
                         if content.startswith("```python"):
                             content = content[len("```python"):].strip()
                             modified = True
@@ -34,7 +34,7 @@ class EngineeringTeam():
                             content = content[3:].strip()
                             modified = True
                         
-                        # Strip trailing markdown wrappers
+                        
                         if content.endswith("```"):
                             content = content[:-3].strip()
                             modified = True
@@ -59,7 +59,7 @@ class EngineeringTeam():
             config=self.agents_config['backend_engineer'],
             verbose=True,
             allow_code_execution=True,
-            code_execution_mode="safe",  # Uses Docker for safety
+            code_execution_mode="safe",  
             max_execution_time=500, 
             max_retry_limit=3 
         )
@@ -84,7 +84,7 @@ class EngineeringTeam():
             config=self.agents_config['test_engineer'],
             verbose=True,
             allow_code_execution=True,
-            code_execution_mode="safe",  # Using Docker for safety
+            code_execution_mode="safe",  
             max_execution_time=500, 
             max_retry_limit=3 
         )
@@ -133,14 +133,14 @@ class EngineeringTeam():
     def refine_code_task(self) -> Task:
         return Task(
             config=self.tasks_config['refine_code_task'],
-            agent=self.backend_engineer(),  # Explicitly bind the agent object
+            agent=self.backend_engineer(),  
             callback=self.clean_markdown_callback
         )    
 
     def refine_frontend_task(self) -> Task:
         return Task(
             config=self.tasks_config['refine_frontend_task'],
-            agent=self.frontend_engineer(),  # Explicitly bind the agent object
+            agent=self.frontend_engineer(),  
             callback=self.clean_markdown_callback
         )    
 
