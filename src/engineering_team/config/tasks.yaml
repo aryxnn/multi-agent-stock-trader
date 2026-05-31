@@ -1,0 +1,187 @@
+design_task:
+  description: >
+    Take the high level requirements described here and prepare a detailed system design specification for the developer:
+    "{requirements}"
+    
+    The design document must:
+    1. Everything should be outlined to fit within 1 python module.
+    2. Explicitly document class designs, field definitions, and fully-typed method signatures.
+    3. Specify error scenarios, including what custom Exceptions should be raised (e.g. InsufficientFunds).
+    4. Highlight critical logic boundaries (preventing negative trades, negative balances, and non-existent assets).
+    
+    IMPORTANT: Only output the design in markdown format, laying out in detail the classes and functions in the module, describing the functionality.
+  expected_output: >
+    A detailed architectural design specification for the engineer, identifying the classes, attributes, methods, type definitions, and business logic.
+  agent: engineering_lead
+  output_file: output/{module_name}_design.md
+
+code_task:
+  description: >
+    Write a python module `{module_name}` containing the class `{class_name}` that implements the design described by the engineering lead, in order to achieve the requirements:
+    "{requirements}"
+    
+    Coding requirements:
+    1. Implement strict parameter type and value validation at class boundaries (reject negative deposits, zero share purchases, etc.).
+    2. Write complete type hints (`typing` module) and include docstrings for classes and methods.
+    3. Implement custom exception classes (e.g. `InsufficientFundsError`, `InvalidTransactionError`) as defined in the design spec.
+    4. Ensure the class exposes a testing helper callback hooks or handles `get_share_price` dynamically.
+    
+    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
+    The output should be valid Python code that can be directly saved to a file and executed.
+  expected_output: >
+    A production-ready Python code file containing classes, methods, typing, and standard exception handling.
+  agent: backend_engineer
+  context:
+    - design_task
+  output_file: output/{module_name}
+
+security_audit_task:
+  description: >
+    Analyze the generated python backend file {module_name} for logical vulnerabilities and security bugs.
+    Look specifically for:
+    1. Improper validation of input parameters (like negative values for deposits/withdrawals/share quantities).
+    2. Insufficient fund validations (can buying transactions exceed the cash balance?).
+    3. Proper boundary handling and state manipulation.
+    Write a detailed report containing:
+    - Executive Summary
+    - Audited Files List
+    - Severity Matrix (Critical, High, Medium, Low vulnerabilities found)
+    - Detailed breakdown of issues with recommendations
+  expected_output: >
+    A detailed security analysis report in markdown format.
+  agent: security_engineer
+  context:
+    - code_task
+  output_file: output/{module_name}_security_report.md
+
+frontend_task:
+  description: >
+    Write a gradio UI in a module app.py that demonstrates the given backend class in {module_name}.
+    Assume there is only 1 user, and keep the UI very simple indeed - just a prototype or demo.
+    
+    Gradio UI Requirements:
+    1. Import the `{class_name}` from `{module_name}`.
+    2. Set up panels: Manage Cash (deposit/withdraw), Buy/Sell Stock, View Portfolio & Transaction History.
+    3. The UI must display a single, global, visible Textbox for status messages. Map click callback outputs directly to this global status box (e.g. outputs=[deposit_amount, status_box]) rather than using intermediate hidden textboxes with `.change()` event listeners.
+    4. Gradio API Constraints:
+       - Never pass a `label` argument to `gr.HTML()`, as this is not supported in the Gradio API and causes a startup TypeError crash.
+       - Never pass `max_rows` or `row_count` arguments to `gr.Dataframe()`, as these are not supported in the Gradio API and cause a startup TypeError crash. Initialize dataframes simply with `headers`, `datatype`, and `interactive` values.
+    5. Do not include markdown code block syntax (like ```python) in your response; output raw Python code.
+    
+    Here are the requirements: {requirements}
+  expected_output: >
+    A gradio UI in module app.py that demonstrates the given backend class.
+    The file should be ready so that it can be run as-is, in the same directory as the backend module, and it should import the backend class from {module_name}.
+    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
+    The output should be valid Python code that can be directly saved to a file and executed.
+  agent: frontend_engineer
+  context:
+    - code_task
+  output_file: output/app.py
+  
+test_task:
+  description: >
+    Write unit tests for the given backend module {module_name} and create a test_{module_name} in the same directory as the backend module.
+    
+    Testing Requirements:
+    1. Use Python's standard `unittest` framework.
+    2. Mock the `get_share_price` function using `unittest.mock` to guarantee deterministic test runs.
+    3. Target coverage for boundary checks (e.g. buying when cash is zero, withdrawing when balance is low, buying/selling negative share counts).
+    4. Do not include markdown code block syntax (like ```python) in your response; output raw Python code.
+  expected_output: >
+    A test_{module_name} module that tests the given backend module.
+    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
+    The output should be valid Python code that can be directly saved to a file and executed.
+  agent: test_engineer
+  context:
+    - code_task
+  output_file: output/test_{module_name}
+
+refine_frontend_task:
+  description: >
+    The previously written Gradio frontend in `app.py` failed to run.
+    
+    Here is the backend code that it imports:
+    ---
+    {backend_code}
+    ---
+    
+    Here is the frontend code that was written:
+    ---
+    {current_frontend}
+    ---
+    
+    Here is the exact runtime failure trace:
+    ---
+    {error_trace}
+    ---
+    
+    Review the backend code, the frontend code, and the error, and rewrite `app.py` so that it runs successfully.
+    Pay close attention to ensure all UI components, buttons, inputs, and outputs referenced in callback click handlers (like outputs=[...]) are correctly defined and match.
+    
+    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
+  expected_output: >
+    A corrected Python file app.py that sets up and launches the Gradio interface without crashing.
+  agent: frontend_engineer
+  output_file: output/app.py
+
+refine_code_task:
+  description: >
+    The previously written Python code for `{module_name}` failed some unit tests.
+    
+    Here is the technical design specification you must adhere to:
+    ---
+    {design_spec}
+    ---
+    
+    Here is the code that was written:
+    ---
+    {current_code}
+    ---
+    
+    Here is the test suite that was executed:
+    ---
+    {current_tests}
+    ---
+    
+    Here is the exact test execution failure trace:
+    ---
+    {error_trace}
+    ---
+    
+    Review the code and the test suite, identify the bug(s), and rewrite `{module_name}` so that it achieves all requirements:
+    "{requirements}"
+    and passes all the tests. Ensure you adhere to the method signatures and class structures defined in the design specification.
+    
+    IMPORTANT: Output ONLY the raw Python code without any markdown formatting, code block delimiters, or backticks.
+  expected_output: >
+    A corrected Python module file containing classes, methods, typing, and exceptions that passes the tests.
+  agent: backend_engineer
+  output_file: output/{module_name}
+
+generate_requirements_task:
+  description: >
+    Analyze the generated backend file `{module_name}` and frontend file `app.py`.
+    Identify all external packages required (like `gradio`, `cryptography`, etc.).
+    Generate a clean list of dependencies.
+    Output ONLY the names and version specifications (e.g. gradio>=4.0.0) of the packages, one per line. Do not include markdown code block syntax.
+  expected_output: >
+    Raw text contents of a requirements.txt file listing all dependencies.
+  agent: devops_engineer
+  context:
+    - code_task
+    - frontend_task
+  output_file: output/requirements.txt
+
+generate_dockerfile_task:
+  description: >
+    Write a complete, production-ready `Dockerfile` to run the Gradio application.
+    The Dockerfile should use a slim Python base image, copy `requirements.txt`, `app.py`, and `{module_name}` into the container, install the dependencies, expose port 7860, and run `python app.py`.
+    Output ONLY the raw Dockerfile contents. Do not include markdown code block syntax.
+  expected_output: >
+    Raw text contents of a Dockerfile.
+  agent: devops_engineer
+  context:
+    - code_task
+    - frontend_task
+  output_file: output/Dockerfile
