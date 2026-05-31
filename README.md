@@ -1,17 +1,18 @@
 # Multi-Agent Stock Trader
-This project is a multi-agent orchestration pipeline built with CrewAI that models a complete software development lifecycle (SDLC). The system automatically designs, writes, audits, tests, and containerizes a secure stock trading simulation platform based on high-level requirements.
+An autonomous multi-agent SDLC pipeline built with CrewAI. The factory orchestrates six specialized AI agents (Tech Lead, Developer, Auditor, Tester, Prototyper, and DevOps) to dynamically build a secure, containerized stock trading simulation platform.
+
 ## Key Features
-* **Closed-Loop QA Verification:** Automatically executes generated unit test suites via subprocesses and feeds back execution errors to developer agents for self-healing.
-* **Frontend Smoke-Testing:** Probes Gradio UI execution with a startup timeout checkpoint to catch import issues and binding NameErrors.
+* **Closed-Loop Quality Analysis:** Automatically executes generated unit test suites via subprocesses and feeds back execution errors to developer agents for self-healing.
+* **Frontend Testing:** Probes Gradio UI execution with a startup timeout checkpoint to catch import issues and binding NameErrors.
 * **AppSec Vulnerability Auditing:** Utilizes a SecOps agent to audit code for logic vulnerabilities and financial boundary flaws before packaging.
 * **Automated Containerization:** Dynamically generates a production-ready Dockerfile and verified requirements.txt dependency file.
 ## Agent Descriptions
-* **Tech Lead (Engineering Lead):** Analyzes product requirements and designs structured OOP class definitions, exceptions, and typed method signatures.
-* **Developer (Backend Engineer):** Implements raw PEP 8-compliant Python modules using strict input checks and custom exceptions.
-* **Auditor (Security Engineer):** Audits code modules for boundary overflows, logical security flaws, and transaction bypasses.
-* **Tester (Test Engineer):** Writes complete mock-asserted unit tests targeting standard paths and extreme error boundaries.
-* **Prototyper (Frontend Engineer):** Builds reactive Gradio interface prototypes with validation notifications and error handling.
-* **Release Engineer (DevOps):** Generates dependency manifests and multi-stage execution Dockerfiles for clean production runs.
+* **Engineering Lead:** Analyzes product requirements and designs structured OOP class definitions, exceptions, and typed method signatures.
+* **Backend Engineer:** Implements raw PEP 8-compliant Python modules using strict input checks and custom exceptions.
+* **Security Engineer:** Audits code modules for boundary overflows, logical security flaws, and transaction bypasses.
+* **Test Engineer:** Writes complete mock-asserted unit tests targeting standard paths and extreme error boundaries.
+* **Frontend Engineer:** Builds reactive Gradio interface prototypes with validation notifications and error handling.
+* **DevOps Engineer:** Generates dependency manifests and multi-stage execution Dockerfiles for clean production runs.
 ## Architecture and Workflow
 The pipeline runs sequentially to build and test the codebase:
 1. **Design Stage:** Tech Lead designs the architecture document.
@@ -23,10 +24,10 @@ The pipeline runs sequentially to build and test the codebase:
 ### Closed-Loop Verification
 Unlike static code generation pipelines, this factory implements two runtime verification loops:
 * **Backend Self-Healing Loop:** The orchestration engine runs the generated unit test suite as a python subprocess. If the tests fail, the traceback is captured and routed back to the developer agent to correct the source file. This loop repeats up to three times or until all tests pass.
-* **Frontend Smoke-Test Loop:** The system executes the Gradio interface in a subprocess with a timeout threshold. If the UI crashes on startup due to syntax or variable binding issues, the error log is sent to the frontend engineer for auto-remediation.
+* **Frontend Test Loop:** The system executes the Gradio interface in a subprocess with a timeout threshold. If the UI crashes on startup due to syntax or variable binding issues, the error log is sent to the frontend engineer for auto-remediation.
 ---
 ## Application Screenshots
-To display screenshots of the generated platform on GitHub, create a folder named `screenshots/` in the project root and add your images using the designated file names:
+The Gradio Stock Trader made by the agents:
 * **Deposit and Withdrawal UI Panel:**
   ![Deposit and Withdrawal Panel](screenshots/deposit_withdraw.png)
 * **Stock Purchase and Sale Interface:**
@@ -58,14 +59,9 @@ To compile the architecture and execute the generation and verification loops:
 ```bash
 crewai run
 ```
-*Note: This command runs the pipeline defined in `src/engineering_team/main.py`.*
+
 ### 2. Run the Generated Platform
-Once the pipeline successfully passes all automated tests, the final output will be written to the `output/` directory. Run the Gradio interface locally:
+Once the pipeline successfully passes all automated tests, the final output will be written to the output directory. Run the Gradio interface locally:
 ```bash
 python output/app.py
 ```
----
-## System Configuration
-* **Agent Prompts:** Customize agent profiles, objectives, and roles in `src/engineering_team/config/agents.yaml`.
-* **Task Definitions:** Configure input contexts, constraints, and output file parameters in `src/engineering_team/config/tasks.yaml`.
-* **System Requirements:** Adjust the target application requirements inside the `requirements` variable in `src/engineering_team/main.py`.
